@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using VideoGameApi.Data;
+using VideoGameApi.Interfaces;
+using VideoGameApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,13 +15,18 @@ builder.Services.AddOpenApi();
 //Inject the DbContext
 builder.Services.AddDbContext<VideoGameDbContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")) );
 
+//Inject Services
+builder.Services.AddScoped<IVideoGame, VideoGameServices>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapScalarApiReference();
+    //app.MapScalarApiReference();
     app.MapOpenApi();
+
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "VideoGameApi"));
 }
 
 app.UseHttpsRedirection();

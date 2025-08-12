@@ -3,32 +3,32 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using VideoGameApi.Data;
+using VideoGameApi.Interfaces;
 using VideoGameApi.Models;
 
 namespace VideoGameApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class VideoGameController : ControllerBase
     {
        
 
-        private readonly VideoGameDbContext _context;
+        private readonly IVideoGame _videoGame;
 
 
-        public VideoGameController(VideoGameDbContext context) { 
+        public VideoGameController(IVideoGame videoGame) { 
 
-            _context = context;
+            _videoGame = videoGame;
         
         }
 
 
 
-        [HttpGet("GetAllVideosGames")]
+        [HttpGet("GetAllVideoGames")]
         public async Task<ActionResult<List<VideoGame>>> GetVideoGames()
         {
 
-            var videoGames = await _context.VideoGames.ToListAsync();
+            var videoGames = await _videoGame.GetAllVideoGamesAsync();
 
             return Ok(videoGames);
         }
@@ -37,115 +37,39 @@ namespace VideoGameApi.Controllers
 
         public async Task<ActionResult<object>> GetSingleGame(string gameId)
         {
-            MdResponse response = new MdResponse { ResponseCode = 0 };
-
-            //var game = videoGames.Where(e => e.Id.Equals(gameId));
-            //var game = videoGames.Where(e => e.Id == gameId);
-            var game = await _context.VideoGames.FindAsync(gameId);
-
-            if (game is null)
-            {
-                response.ResponseMessage = "No Game Found";
-
-                return Ok(response);
-            }
+            
+           var game = await _videoGame.GetSingleGameAsync(gameId);
 
             return Ok(game);
 
         }
 
         [HttpPost("CreateGame")]
-        public async Task<ActionResult<object>> CreateGame(VideoGame newGame)
+        public async Task<ActionResult<object>> CreateGame([FromBody] VideoGame newGame)
         {
-            MdResponse response = new MdResponse { ResponseCode = 0 };
+            
 
+            var response = await _videoGame.CreateGameAsync(newGame);
 
-            if (newGame is null)
-            {
-                response.ResponseMessage = "Failed to create game";
-                return Ok(response);
-            }
-
-            if (string.IsNullOrEmpty(newGame.Title))
-            {
-                response.ResponseMessage = "Title is required";
-                return Ok(response);
-            }
-
-            //Initiate the saving
-
-            newGame.Id = Guid.NewGuid().ToString();
-
-            await _context.VideoGames.AddAsync(newGame);
-
-            //This the line saving data in the database
-
-            await _context.SaveChangesAsync();
-
-            response.ResponseCode = 1;
-            response.ResponseMessage = "Saved Successfully";
-            var result = new
-            {
-                response,
-                newGame
-            };
-
-            return Ok(result);
+            return Ok(response);
 
         }
 
         [HttpPut("UpdateGame/{gameId}")]
         public async Task<ActionResult<MdResponse>> UpdateGame(string gameId, VideoGame updatedGame)
         {
+            var response = await _videoGame.UpdateGameAsync(gameId, updatedGame);
 
-            var response = new MdResponse { ResponseCode = 0 };
-
-            if (string.IsNullOrEmpty(gameId))
-            {
-                response.ResponseMessage = "GameId is required";
-                return Ok(response);
-            }
-
-            //Check if game exists
-            var getGame = await _context.VideoGames.FindAsync(gameId);
-
-            if (getGame is null)
-            {
-
-                response.ResponseMessage = "Game Not Found";
-                return Ok(response);
-            }
-
-            getGame.Title = updatedGame.Title;
-
-            await _context.SaveChangesAsync();
-
-            response.ResponseCode = 1;
-            response.ResponseMessage = "Updated Successfully";
-            var result = new
-            {
-                response,
-                getGame
-            };
-
-            return Ok(result);
+            return Ok(response);
         }
 
         [HttpDelete("DeleteGame/{gameId}")]
         public async Task<ActionResult<MdResponse>> DeleteGame(string gameId)
         {
 
-            var getGame = await _context.VideoGames.FindAsync(gameId);
+            var response = await _videoGame.DeleteGameAsync(gameId);
 
-           _context.VideoGames.Remove(getGame);
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new MdResponse
-            {
-                ResponseCode = 1,
-                ResponseMessage = "Deleted Successfully"
-            });
+            return Ok(response);
 
         }
     }
