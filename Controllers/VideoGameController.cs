@@ -5,6 +5,8 @@ using Microsoft.VisualBasic;
 using VideoGameApi.Data;
 using VideoGameApi.Interfaces;
 using VideoGameApi.Models;
+using VideoGameApi.Models.DatabaseModels;
+using VideoGameApi.Models.VideoGame;
 
 namespace VideoGameApi.Controllers
 {
@@ -25,7 +27,7 @@ namespace VideoGameApi.Controllers
 
 
         [HttpGet("GetAllVideoGames")]
-        public async Task<ActionResult<List<VideoGame>>> GetVideoGames()
+        public async Task<ActionResult<List<MdGetVideoGame>>> GetVideoGames()
         {
 
             var videoGames = await _videoGame.GetAllVideoGamesAsync();
@@ -33,9 +35,9 @@ namespace VideoGameApi.Controllers
             return Ok(videoGames);
         }
 
-        [HttpGet("GetSingleGame/{gameId}")]
+        [HttpGet("GetVideoGameById/{gameId}")]
 
-        public async Task<ActionResult<object>> GetSingleGame(string gameId)
+        public async Task<ActionResult<MdGetVideoGame>> GetSingleGame(string gameId)
         {
             
            var game = await _videoGame.GetSingleGameAsync(gameId);
@@ -44,15 +46,14 @@ namespace VideoGameApi.Controllers
 
         }
 
-        [HttpPost("CreateGame")]
-        public async Task<ActionResult<object>> CreateGame([FromBody] VideoGame newGame)
+        [HttpPost("CreateVideoGame")]
+        public async Task<IActionResult> CreateGame([FromBody] MdPostVideoGame newGame)
         {
             
 
             var response = await _videoGame.CreateGameAsync(newGame);
 
             return Ok(response);
-
         }
 
         [HttpPut("UpdateGame/{gameId}")]

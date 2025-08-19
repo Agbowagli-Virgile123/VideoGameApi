@@ -1,4 +1,4 @@
-﻿namespace VideoGameApi.Models
+﻿namespace VideoGameApi.Models.DatabaseModels
 {
     public class Developer
     {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VideoGameApi.Data;
 
@@ -11,9 +12,11 @@ using VideoGameApi.Data;
 namespace VideoGameApi.Migrations
 {
     [DbContext(typeof(VideoGameDbContext))]
-    partial class VideoGameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250819104928_DeveloperPublisherRelationship")]
+    partial class DeveloperPublisherRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace VideoGameApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("GenreVideoGame", b =>
-                {
-                    b.Property<string>("GenresId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("VideoGamesId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("GenresId", "VideoGamesId");
-
-                    b.HasIndex("VideoGamesId");
-
-                    b.ToTable("GenreVideoGame", (string)null);
-                });
 
             modelBuilder.Entity("VideoGameApi.Models.Developer", b =>
                 {
@@ -48,21 +36,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Developer", (string)null);
-                });
-
-            modelBuilder.Entity("VideoGameApi.Models.Genre", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Genre", (string)null);
+                    b.ToTable("Developer");
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.Publisher", b =>
@@ -76,7 +50,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Publisher", (string)null);
+                    b.ToTable("Publisher");
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.VideoGame", b =>
@@ -102,7 +76,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasIndex("PublisherId");
 
-                    b.ToTable("VideoGames", (string)null);
+                    b.ToTable("VideoGames");
 
                     b.HasData(
                         new
@@ -169,22 +143,7 @@ namespace VideoGameApi.Migrations
                         .IsUnique()
                         .HasFilter("[VideoGameId] IS NOT NULL");
 
-                    b.ToTable("VideoGameDetails", (string)null);
-                });
-
-            modelBuilder.Entity("GenreVideoGame", b =>
-                {
-                    b.HasOne("VideoGameApi.Models.Genre", null)
-                        .WithMany()
-                        .HasForeignKey("GenresId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VideoGameApi.Models.VideoGame", null)
-                        .WithMany()
-                        .HasForeignKey("VideoGamesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.ToTable("VideoGameDetails");
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.VideoGame", b =>

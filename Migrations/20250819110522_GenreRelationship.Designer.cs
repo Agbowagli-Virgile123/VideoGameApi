@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VideoGameApi.Data;
 
@@ -11,9 +12,11 @@ using VideoGameApi.Data;
 namespace VideoGameApi.Migrations
 {
     [DbContext(typeof(VideoGameDbContext))]
-    partial class VideoGameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250819110522_GenreRelationship")]
+    partial class GenreRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasIndex("VideoGamesId");
 
-                    b.ToTable("GenreVideoGame", (string)null);
+                    b.ToTable("GenreVideoGame");
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.Developer", b =>
@@ -48,7 +51,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Developer", (string)null);
+                    b.ToTable("Developer");
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.Genre", b =>
@@ -62,7 +65,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genre", (string)null);
+                    b.ToTable("Genre");
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.Publisher", b =>
@@ -76,7 +79,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Publisher", (string)null);
+                    b.ToTable("Publisher");
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.VideoGame", b =>
@@ -102,7 +105,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasIndex("PublisherId");
 
-                    b.ToTable("VideoGames", (string)null);
+                    b.ToTable("VideoGames");
 
                     b.HasData(
                         new
@@ -169,7 +172,7 @@ namespace VideoGameApi.Migrations
                         .IsUnique()
                         .HasFilter("[VideoGameId] IS NOT NULL");
 
-                    b.ToTable("VideoGameDetails", (string)null);
+                    b.ToTable("VideoGameDetails");
                 });
 
             modelBuilder.Entity("GenreVideoGame", b =>

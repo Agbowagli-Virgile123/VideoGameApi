@@ -2,6 +2,8 @@
 using VideoGameApi.Data;
 using VideoGameApi.Interfaces;
 using VideoGameApi.Models;
+using VideoGameApi.Models.DatabaseModels;
+using VideoGameApi.Models.VideoGame;
 
 namespace VideoGameApi.Services
 {
@@ -16,32 +18,37 @@ namespace VideoGameApi.Services
         }
 
 
-        public async Task<List<VideoGame>> GetAllVideoGamesAsync()
+        public async Task<List<MdGetVideoGame>> GetAllVideoGamesAsync()
         {
             var videoGames = await _context.VideoGames
-                .Include(g => g.VideoGameDetails)
-                .ToListAsync();
-
+                .Select(g => new MdGetVideoGame
+                {
+                    Id = g.Id,
+                    Title = g.Title,
+                    Platform = g.Platform
+                }).ToListAsync();
+              
             return videoGames;
         }
 
-        public async Task<VideoGame> GetSingleGameAsync(string gameId)
+        public async Task<MdGetVideoGame> GetSingleGameAsync(string gameId)
         {
 
-            var game = await _context.VideoGames.FindAsync(gameId);
+            var game = await _context.VideoGames
+                .Where(g => g.Id == gameId)
+                .Select(g => new MdGetVideoGame
+                {
+                    Id = g.Id,
+                    Title = g.Title,
+                    Platform = g.Platform
+                })
+                .SingleOrDefaultAsync();
 
-            if (game is null)
-            {
 
-                return new VideoGame();
-            }
-
-
-
-            return game;
+            return game ?? new();
         }
 
-        public async Task<MdResponse> CreateGameAsync(VideoGame newGame)
+        public async Task<MdResponse> CreateGameAsync(MdPostVideoGame newGame)
         {
             MdResponse response = new MdResponse { ResponseCode = 0 };
             if (newGame is null)
@@ -50,10 +57,74 @@ namespace VideoGameApi.Services
                 return response;
             }
 
+            if (string.IsNullOrEmpty(newGame.Title) || string.IsNullOrEmpty(newGame.Platform) ||
+                string.IsNullOrEmpty(newGame.DeveloperId) || string.IsNullOrEmpty(newGame.PublisherId))
+            {
+                response.ResponseMessage = "Title, Platform, DeveloperId, and PublisherId are required";
+                return response;
+            }
 
+            //Check if the Developer and Publisher exist
+            var dev = await _context.Set<Developer>()
+                .FindAsync(newGame.DeveloperId);
+
+            if (dev is null)
+            {
+                response.ResponseMessage = "Developer does not exist";
+                return response;
+            }
+
+            var pub = await _context.Set<Publisher>()
+                .FindAsync(newGame.PublisherId);
+            if (pub is null)
+            {
+                response.ResponseMessage = "Publisher does not exist";
+                return response;
+            }
+
+            
+            //Mapping new game to the genre if GenreIds are provided
+            List<Genre> genres = new List<Genre>();
+            if (newGame.GenreIds is not null && newGame.GenreIds.Any())
+            {
+                genres = await _context.Set<Genre>()
+                    .Where(gd => newGame.GenreIds.Contains(gd.Id))
+                    .ToListAsync();
+
+                if (genres.Count != newGame.GenreIds.Count)
+                {
+                    response.ResponseMessage = "One or more GenreIds are invalid";
+                    return response;
+                }
+            }
+
+            //Build the new game object
             newGame.Id = Guid.NewGuid().ToString();
 
-            _context.VideoGames.Add(newGame);
+            var Video = new VideoGame
+            {
+                Id = newGame.Id,
+                Title = newGame.Title,
+                Platform = newGame.Platform,
+                Developer = dev,
+                Publisher = pub,
+                Genres = genres,
+            };
+
+
+            if (!string.IsNullOrEmpty(newGame.Description) || newGame.ReleaseDate != default)
+            {
+                Video.VideoGameDetails = new VideoGameDetails
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Description = newGame.Description,
+                    ReleaseDate = newGame.ReleaseDate,
+                    VideoGameId = Video.Id
+                };
+            }
+            
+            await _context.VideoGames.AddAsync(Video);
+
             await _context.SaveChangesAsync();
 
             response.ResponseCode = 1;
