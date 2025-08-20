@@ -46,6 +46,44 @@ namespace VideoGameApi.Controllers
 
         }
 
+        [HttpGet("GetGameDetailsByGameId/{gameId}")]
+        public async Task<IActionResult> GetGameDetailsByGameId(string gameId)
+        {
+            var gameDetails = await _videoGame.GetGameDetails(gameId);
+            
+            return Ok(gameDetails);
+        }
+
+        [HttpGet("GetGameDeveloper/{gameId}")]
+        public async Task<IActionResult> GetGameDeveloper(string gameId)
+        {
+            var developer = await _videoGame.GetGameDeveloper(gameId);
+            return Ok(developer);
+        }
+
+        [HttpGet("GetPublisher/{gameId}")]
+        public async Task<IActionResult> GetGamePublisher(string gameId)
+        {
+            var publisher = await _videoGame.GetGamePublisher(gameId);
+
+            return Ok(publisher);
+        }
+
+        [HttpGet("GetGamePubDevDetails/{gameId}")]
+        public async Task<IActionResult> GetGamePubDevDetails(string gameId)
+        {
+            var response = await _videoGame.GetGamePubDevDetails(gameId);
+            return Ok(response);
+        }
+
+        [HttpGet("GetGameGenres/{gameId}")]
+        public async Task<IActionResult> GetGameGenres(string gameId)
+        {
+            var genres = _videoGame.GetGameGenres(gameId);
+            return Ok(genres);
+        }
+
+
         [HttpPost("CreateVideoGame")]
         public async Task<IActionResult> CreateGame([FromBody] MdPostVideoGame newGame)
         {

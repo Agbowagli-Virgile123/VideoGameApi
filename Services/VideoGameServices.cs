@@ -17,7 +17,7 @@ namespace VideoGameApi.Services
             _context = context;
         }
 
-
+        //Get all video games
         public async Task<List<MdGetVideoGame>> GetAllVideoGamesAsync()
         {
             var videoGames = await _context.VideoGames
@@ -31,6 +31,7 @@ namespace VideoGameApi.Services
             return videoGames;
         }
 
+        //Get a single video game by ID
         public async Task<MdGetVideoGame> GetSingleGameAsync(string gameId)
         {
 
@@ -47,6 +48,102 @@ namespace VideoGameApi.Services
 
             return game ?? new();
         }
+
+
+        //Get Video game details by game Id
+        public async Task<MdVideoGameDetails?> GetGameDetails(string gameId)
+        {
+
+            var hasDetails = await _context.VideoGames.Where(g => g.Id == gameId && g.VideoGameDetails != null).AnyAsync();
+
+            if (!hasDetails)
+            {
+                return new MdVideoGameDetails(); // No details found for the game
+            }
+
+            //Check if the game exists
+            var game = await _context.VideoGames
+                .Where(g => g.Id == gameId)
+                .Select(g => new MdVideoGameDetails
+                {
+                    VideoGameId = g.Id,
+                    GameDetailsId = g.VideoGameDetails != null ? g.VideoGameDetails.Id : null,
+                    Description = g.VideoGameDetails != null ? g.VideoGameDetails.Description : null,
+                    ReleaseDate = g.VideoGameDetails.ReleaseDate
+                }).FirstOrDefaultAsync();
+
+          
+                return game;
+
+        }
+
+        //Get the developer of a video game
+        public async Task<MdGameDeveloper?> GetGameDeveloper(string gameId)
+        {
+            var developer = await _context.VideoGames
+                .Where(g => g.Id == gameId)
+                .Select(g => new MdGameDeveloper
+                {
+                    GameId = g.Id,
+                    DeveloperId = g.Developer.Id,
+                    DeveloperName = g.Developer.Name
+                })
+                .FirstOrDefaultAsync();
+
+            return developer;
+        }
+
+        //Get the publisher of a video game
+        public async Task<MdGamePublisher?> GetGamePublisher(string gameId)
+        {
+            var publisher = await _context.VideoGames
+                .Where(g => g.Id == gameId)
+                .Select(g => new MdGamePublisher
+                {
+                    GameId = g.Id,
+                    PublisherId = g.Publisher.Id,
+                    PublisherName = g.Publisher.Name
+                })
+                .FirstOrDefaultAsync();
+            return publisher;
+        }
+
+        public async Task<MdGetGamePubDevDetails> GetGamePubDevDetails(string gameId)
+        {
+            var gameDetails = await _context.VideoGames
+                .Where(g => g.Id == gameId)
+                .Select(g => new MdGetGamePubDevDetails
+                {
+                    VideoGameId = g.Id,
+                    GameDetailsId = g.VideoGameDetails != null ? g.VideoGameDetails.Id : null,
+                    Description = g.VideoGameDetails != null ? g.VideoGameDetails.Description : null,
+                    ReleaseDate = g.VideoGameDetails != null ? g.VideoGameDetails.ReleaseDate : default,
+                    PublisherId = g.Publisher.Id,
+                    PublisherName = g.Publisher.Name,
+                    DeveloperId = g.Developer.Id,
+                    DeveloperName = g.Developer.Name
+                })
+                .FirstOrDefaultAsync();
+            return gameDetails ?? new MdGetGamePubDevDetails();
+        }
+
+
+        //Get Game genres
+        public async Task<MdGameGenres> GetGameGenres(string gameId)
+        {
+            var genres = await _context.VideoGames
+                        .Include(g => g.Genres)
+                       .FirstOrDefaultAsync();
+
+            var gameGenres = new MdGameGenres
+            {
+                GameVideoId = gameId,
+                Genres = genres?.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList()
+            };
+
+            return gameGenres;
+        }
+           
 
         public async Task<MdResponse> CreateGameAsync(MdPostVideoGame newGame)
         {
