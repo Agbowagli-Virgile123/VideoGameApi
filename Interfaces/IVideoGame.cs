@@ -12,6 +12,7 @@ namespace VideoGameApi.Interfaces
         Task<MdGameDeveloper> GetGameDeveloper(string gameId);
         Task<MdGamePublisher> GetGamePublisher(string gameId);
         Task<MdGetGamePubDevDetails> GetGamePubDevDetails(string gameId);
+        Task<List<Genre>> Genres(string gameId);
         Task<MdGameGenres> GetGameGenres(string gameId);
         Task<MdResponse> CreateGameAsync(MdPostVideoGame newGame);
         Task<MdResponse> UpdateGameAsync(string gameId, VideoGame updatedGame);

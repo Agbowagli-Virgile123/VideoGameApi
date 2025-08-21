@@ -127,18 +127,51 @@ namespace VideoGameApi.Services
             return gameDetails ?? new MdGetGamePubDevDetails();
         }
 
+        //Get the genre of aparticular game
+        public async Task<List<Genre>> Genres(string gameId)
+        {
+            //check if the game exists
+            //var gameExists = await _context.VideoGames.AnyAsync(v => v.Id == gameId);
+
+            //if (!gameExists)
+            //{
+            //    return new List<Genre>(); // Return an empty list if the game does not exist
+            //}
+
+            //var genres = await _context.VideoGames
+            //                .AsNoTracking()
+            //                .Where(v => v.Id == gameId)
+            //                .Include(v => v.Genres)
+            //                .FirstOrDefaultAsync();
+
+            //if (!genres.Genres.Any())
+            //{
+            //    return new List<Genre>(); // Return an empty list if no genres found
+            //}
+
+            //List<Genre>? genreList = genres.Genres.ToList();
+
+            var genreList = await _context.Set<Genre>()
+                .Where(g => g.VideoGames.Any(vg => vg.Id == gameId))
+                .ToListAsync();
+
+
+            return genreList;
+        }
+
 
         //Get Game genres
         public async Task<MdGameGenres> GetGameGenres(string gameId)
         {
             var genres = await _context.VideoGames
+                        .Where(g => g.Id == gameId)
                         .Include(g => g.Genres)
                        .FirstOrDefaultAsync();
 
             var gameGenres = new MdGameGenres
             {
-                GameVideoId = gameId,
-                Genres = genres?.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList()
+                GameVideoId = genres?.Id,
+                Genres = genres?.Genres
             };
 
             return gameGenres;

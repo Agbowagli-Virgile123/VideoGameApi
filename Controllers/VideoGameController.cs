@@ -76,10 +76,19 @@ namespace VideoGameApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetGameGenres/{gameId}")]
-        public async Task<IActionResult> GetGameGenres(string gameId)
+
+        [HttpGet("GenresWithoutGameId/{gameId}")]
+        public async Task<ActionResult<List<Genre>>> GenresWithoutGameId(string gameId)
         {
-            var genres = _videoGame.GetGameGenres(gameId);
+            var response = await _videoGame.Genres(gameId);
+            return Ok(response);
+        }
+
+
+        [HttpGet("GetGameGenres/{gameId}")]
+        public async Task<ActionResult<MdGameGenres>> GetGameGenres(string gameId)
+        {
+            var genres = await _videoGame.GetGameGenres(gameId);
             return Ok(genres);
         }
 

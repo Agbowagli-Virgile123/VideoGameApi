@@ -17,6 +17,7 @@ builder.Services.AddDbContext<VideoGameDbContext>( options => options.UseSqlServ
 
 //Inject Services
 builder.Services.AddScoped<IVideoGame, VideoGameServices>();
+builder.Services.AddScoped<IDeveloper, DeveloperServices>();
 
 var app = builder.Build();
 
