@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
 using VideoGameApi.Data;
 using VideoGameApi.Interfaces;
 using VideoGameApi.Services;
@@ -27,7 +26,7 @@ if (app.Environment.IsDevelopment())
     //app.MapScalarApiReference();
     app.MapOpenApi();
 
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "VideoGameApi"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "GameApi"));
 }
 
 app.UseHttpsRedirection();

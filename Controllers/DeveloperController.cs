@@ -6,6 +6,7 @@ using VideoGameApi.Models.Developer;
 
 namespace VideoGameApi.Controllers
 {
+    [ApiController]
     public class DeveloperController : ControllerBase
     {
         private readonly IDeveloper _developer;
@@ -23,7 +24,7 @@ namespace VideoGameApi.Controllers
         }
 
         [HttpGet("GetDevById/{devId}")]
-        public async Task<IActionResult> GetDevById(string devId)
+        public async Task<ActionResult<Developer>> GetDevById(string devId)
         {
             var resp = await _developer.GetDeveloperById(devId);
             return Ok(resp);

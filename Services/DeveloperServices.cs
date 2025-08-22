@@ -27,9 +27,15 @@ namespace VideoGameApi.Services
         }
 
         //Get developer by Id
-        public async Task<Developer> GetDeveloperById(string devId)
+        public async Task<Developer?> GetDeveloperById(string devId)
         {
             var developer = await _context.Set<Developer>().FindAsync(devId);
+
+            if(developer == null)
+            {
+                return new Developer { Name = null!};
+            }
+
             return developer;
         }
 
