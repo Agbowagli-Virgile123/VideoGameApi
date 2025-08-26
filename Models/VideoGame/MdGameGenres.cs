@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using VideoGameApi.Models.DatabaseModels;
 
-namespace VideoGameApi.Models.VideoGame
+namespace VideoGameApi.Models.DatabaseModels
 {
     [NotMapped]
     public class MdGameGenres

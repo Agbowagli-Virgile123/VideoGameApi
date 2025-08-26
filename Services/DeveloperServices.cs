@@ -66,7 +66,7 @@ namespace VideoGameApi.Services
 
         }
 
-        //Get Games o a developer
+        //Get Games of a developer
         public async Task<MdGetDeveloperGames> GetDevGames(string devId)
         {
             var dev = await _context.Set<Developer>()

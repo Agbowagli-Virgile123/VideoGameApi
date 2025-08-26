@@ -144,7 +144,6 @@ namespace VideoGameApi.Services
 
         }
         
-        
         //Delete publisher
         public async Task<MdResponse> DeletePublisher(string publisherId)
         {
