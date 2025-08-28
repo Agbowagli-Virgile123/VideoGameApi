@@ -46,12 +46,27 @@ namespace VideoGameApi.Controllers
 
         }
 
+        [HttpGet("GetVideoGamesDetails")]
+        public async Task<IActionResult> GetVideoGamesDetails()
+        {
+            var gameDetails = await _videoGame.GetVideoGamesDetails();
+            
+            return Ok(gameDetails);
+        }
+        
         [HttpGet("GetGameDetailsByGameId/{gameId}")]
         public async Task<IActionResult> GetGameDetailsByGameId(string gameId)
         {
             var gameDetails = await _videoGame.GetGameDetails(gameId);
             
             return Ok(gameDetails);
+        }
+
+        [HttpGet("GetGamesDevelopers")]
+        public async Task<IActionResult> GetGamesDevelopers()
+        {
+            var developer = await _videoGame.GetGamesDevelopers();
+            return Ok(developer);
         }
 
         [HttpGet("GetGameDeveloper/{gameId}")]
@@ -61,6 +76,14 @@ namespace VideoGameApi.Controllers
             return Ok(developer);
         }
 
+        [HttpGet("GetGamesPublishers")]
+        public async Task<IActionResult> GetGamesPublishers()
+        {
+            var publisher = await _videoGame.GetGamesPublishers();
+
+            return Ok(publisher);
+        }
+        
         [HttpGet("GetPublisher/{gameId}")]
         public async Task<IActionResult> GetGamePublisher(string gameId)
         {
@@ -104,7 +127,7 @@ namespace VideoGameApi.Controllers
         }
 
         [HttpPut("UpdateGame/{gameId}")]
-        public async Task<ActionResult<MdResponse>> UpdateGame(string gameId, VideoGame updatedGame)
+        public async Task<ActionResult<MdResponse>> UpdateGame(string gameId, [FromBody] MdPostVideoGame updatedGame)
         {
             var response = await _videoGame.UpdateGameAsync(gameId, updatedGame);
 

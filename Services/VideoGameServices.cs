@@ -3,6 +3,7 @@ using VideoGameApi.Data;
 using VideoGameApi.Interfaces;
 using VideoGameApi.Models;
 using VideoGameApi.Models.DatabaseModels;
+using VideoGameApi.Models.Publisher;
 using VideoGameApi.Models.VideoGame;
 
 namespace VideoGameApi.Services
@@ -49,6 +50,39 @@ namespace VideoGameApi.Services
             return game ?? new();
         }
 
+        //Get video games and details
+        public async Task<List<MdVideoGameDetails>> GetVideoGamesDetails()
+        {
+
+            var videoDetails = await _context.VideoGames
+                                    .AsNoTracking()
+                                    .Select(g => new MdVideoGameDetails
+                                    {
+                                        VideoGameId = g.Id,
+                                        GameDetailsId = g.VideoGameDetails != null ? g.VideoGameDetails.Id : null,
+                                        Description = g.VideoGameDetails != null ? g.VideoGameDetails.Description : null,
+                                        ReleaseDate = g.VideoGameDetails != null ? g.VideoGameDetails.ReleaseDate : default
+
+                                    }).ToListAsync();
+
+
+            //OR
+
+            var vidDetails = await _context.VideoGames
+                                .GroupJoin(_context.VideoGameDetails,
+                                v => v.Id,
+                                dt => dt.VideoGameId,
+                                (v, details) => new MdVideoGameDetails
+                                {
+                                    VideoGameId = v.Id,
+                                    GameDetailsId = details.Select(d => d.Id).FirstOrDefault(),
+                                    Description = details.Select(d  => d .Description).FirstOrDefault(),
+                                    ReleaseDate = details.Select(d => d .ReleaseDate).FirstOrDefault(),
+
+                                }).ToListAsync();
+
+            return videoDetails;
+        }
 
         //Get Video game details by game Id
         public async Task<MdVideoGameDetails?> GetGameDetails(string gameId)
@@ -77,6 +111,39 @@ namespace VideoGameApi.Services
 
         }
 
+        //Get games developers of games
+        public async Task<List<MdGameDeveloper>> GetGamesDevelopers()
+        {
+            var gamesDevelopers = await _context.VideoGames
+                                    .AsNoTracking()
+                                    .Select(g => new MdGameDeveloper
+                                    {
+                                        GameId = g.Id,
+                                        DeveloperId = g.DeveloperId,
+                                        DeveloperName = g.Developer != null ? g.Developer.Name : null,
+
+                                    }).ToListAsync();
+
+
+            //OR
+
+
+            var gamesDevs = await _context.VideoGames
+                                .GroupJoin(_context.Set<Developer>(),
+                                g => g.DeveloperId,
+                                d => d.Id,
+                                (g, devs) => new MdGameDeveloper
+                                {
+                                    GameId = g.Id,
+                                    DeveloperId = g.DeveloperId,
+                                    DeveloperName = devs.Select(d => d.Name).FirstOrDefault(),
+
+                                }).ToListAsync();
+
+
+            return gamesDevelopers;
+        }
+
         //Get the developer of a video game
         public async Task<MdGameDeveloper?> GetGameDeveloper(string gameId)
         {
@@ -91,6 +158,38 @@ namespace VideoGameApi.Services
                 .FirstOrDefaultAsync();
 
             return developer;
+        }
+
+        //Get publishers of a games
+        public async Task<List<MdGamePublisher>> GetGamesPublishers()
+        {
+            var gamesPublisher = await _context.VideoGames
+                                    .AsNoTracking()
+                                    .Select(g => new MdGamePublisher
+                                    {
+                                        GameId = g.Id,
+                                        PublisherId = g.PublisherId,
+                                        PublisherName = g.Publisher != null ? g.Publisher.Name : null,
+
+                                    }).ToListAsync();
+
+            //OR
+            var gamePubs = await _context.VideoGames
+                            .GroupJoin(_context.Set<Publisher>(),
+                            g => g.PublisherId,
+                            p => p.Id,
+                            (g, pub) => new MdGamePublisher
+                            {
+                                GameId = g.Id,
+                                PublisherId = g.PublisherId,
+                                PublisherName = pub.Select(p => p.Name).FirstOrDefault(),
+
+                            }).ToListAsync();
+
+
+
+
+            return gamesPublisher;
         }
 
         //Get the publisher of a video game
@@ -159,7 +258,6 @@ namespace VideoGameApi.Services
             return genreList;
         }
 
-
         //Get Game genres
         public async Task<MdGameGenres> GetGameGenres(string gameId)
         {
@@ -177,7 +275,6 @@ namespace VideoGameApi.Services
             return gameGenres;
         }
            
-
         public async Task<MdResponse> CreateGameAsync(MdPostVideoGame newGame)
         {
             MdResponse response = new MdResponse { ResponseCode = 0 };
@@ -262,7 +359,7 @@ namespace VideoGameApi.Services
             return response;
         }
 
-        public async Task<MdResponse> UpdateGameAsync(string gameId, VideoGame updatedGame)
+        public async Task<MdResponse> UpdateGameAsync(string gameId, MdPostVideoGame updatedGame)
         {
             MdResponse response = new MdResponse { ResponseCode = 0 };
             if (updatedGame is null || string.IsNullOrEmpty(gameId))
@@ -278,10 +375,24 @@ namespace VideoGameApi.Services
                 return response;
             }
 
+            var dev = await _context.Set<Developer>().FindAsync(updatedGame.DeveloperId);
+
+            if(dev  is null)
+            {
+                response.ResponseMessage = "Invaid Developer";
+            }
+
+             var pub = await _context.Set<Publisher>().FindAsync(updatedGame.PublisherId);
+
+            if(pub  is null)
+            {
+                response.ResponseMessage = "Invaid Publisher";
+            }
+
             existingGame.Title = updatedGame.Title;
             existingGame.Platform = updatedGame.Platform;
-            existingGame.Developer = updatedGame.Developer;
-            existingGame.Publisher = updatedGame.Publisher;
+            existingGame.Developer = dev;
+            existingGame.Publisher = pub;
 
             _context.VideoGames.Update(existingGame);
             await _context.SaveChangesAsync();
@@ -290,7 +401,6 @@ namespace VideoGameApi.Services
             response.ResponseMessage = "Game Updated Successfully";
             return response;
         }
-
 
         public async Task<MdResponse> DeleteGameAsync(string gameId)
         {
