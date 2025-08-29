@@ -34,7 +34,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasIndex("VideoGamesId");
 
-                    b.ToTable("GenreVideoGame");
+                    b.ToTable("GenreVideoGame", (string)null);
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.DatabaseModels.Developer", b =>
@@ -48,7 +48,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Developer");
+                    b.ToTable("Developer", (string)null);
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.DatabaseModels.Genre", b =>
@@ -62,7 +62,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genre");
+                    b.ToTable("Genre", (string)null);
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.DatabaseModels.Publisher", b =>
@@ -76,7 +76,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Publisher");
+                    b.ToTable("Publisher", (string)null);
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.DatabaseModels.VideoGame", b =>
@@ -102,7 +102,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasIndex("PublisherId");
 
-                    b.ToTable("VideoGames");
+                    b.ToTable("VideoGames", (string)null);
 
                     b.HasData(
                         new
@@ -169,7 +169,7 @@ namespace VideoGameApi.Migrations
                         .IsUnique()
                         .HasFilter("[VideoGameId] IS NOT NULL");
 
-                    b.ToTable("VideoGameDetails");
+                    b.ToTable("VideoGameDetails", (string)null);
                 });
 
             modelBuilder.Entity("VideoGameApi.Models.User.User", b =>
@@ -188,7 +188,7 @@ namespace VideoGameApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("GenreVideoGame", b =>

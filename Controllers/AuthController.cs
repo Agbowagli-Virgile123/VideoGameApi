@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using VideoGameApi.Interfaces;
 using VideoGameApi.Models;
+using VideoGameApi.Models.DatabaseModels;
 using VideoGameApi.Models.User;
 
 namespace VideoGameApi.Controllers
@@ -39,6 +41,14 @@ namespace VideoGameApi.Controllers
                 Token = token,
                 User = user
             });
+        }
+
+
+        [Authorize]
+        [HttpGet("AuthenticatedOnlyEndpoint")]
+        public ActionResult<string> AutenticatedOnlyEndpoint()
+        {
+            return Ok("You are authenticated");
         }
     }
 }

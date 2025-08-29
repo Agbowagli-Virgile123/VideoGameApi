@@ -1,4 +1,4 @@
-﻿namespace VideoGameApi.Models.User
+﻿namespace VideoGameApi.Models.DatabaseModels
 {
     public class User
     {

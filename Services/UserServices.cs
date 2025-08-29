@@ -8,6 +8,7 @@ using System.Text;
 using VideoGameApi.Data;
 using VideoGameApi.Interfaces;
 using VideoGameApi.Models;
+using VideoGameApi.Models.DatabaseModels;
 using VideoGameApi.Models.User;
 
 namespace VideoGameApi.Services
@@ -31,7 +32,7 @@ namespace VideoGameApi.Services
             if(request == null)
             {
                 response.ResponseMessage = "All fields are required";
-                return (response, user);
+                return (response, null!);
             }
 
             //Check if there is any user with that user name
@@ -40,7 +41,7 @@ namespace VideoGameApi.Services
             if(check)
             {
                 response.ResponseMessage = "User name already exists";
-                return (response, user);
+                return (response, null!);
             }
 
             var hashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password); 
@@ -65,7 +66,7 @@ namespace VideoGameApi.Services
             if (cred == null)
             {
                 response.ResponseMessage = "Username or Password is required";
-                return (response, Token, user) ;
+                return (response, Token, null!) ;
             }
 
 
@@ -75,7 +76,7 @@ namespace VideoGameApi.Services
             {
                 response.ResponseMessage = "Invalid credentials";
                 user = new();
-                return (response, Token, user!);
+                return (response, Token, null!);
             }
 
 
@@ -85,7 +86,7 @@ namespace VideoGameApi.Services
             {
                 response.ResponseMessage =  "Invalid credentials";
                 user = new();
-                return (response, Token, user!);
+                return (response, Token, null!);
             }
 
             user.HashedPassword = "";
