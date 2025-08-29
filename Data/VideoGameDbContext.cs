@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VideoGameApi.Models.DatabaseModels;
+using VideoGameApi.Models.User;
 
 namespace VideoGameApi.Data
 {
@@ -8,6 +9,8 @@ namespace VideoGameApi.Data
         /// <summary>
         /// Represents the collection of VideoGames in the database.
         /// </summary>
+        /// 
+        public DbSet<User> Users => Set<User>();
         public DbSet<VideoGame> VideoGames  => Set<VideoGame>();
 
         public DbSet<VideoGameDetails> VideoGameDetails => Set<VideoGameDetails>();

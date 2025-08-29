@@ -1,0 +1,129 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using VideoGameApi.Data;
+using VideoGameApi.Interfaces;
+using VideoGameApi.Models;
+using VideoGameApi.Models.User;
+
+namespace VideoGameApi.Services
+{
+    public class UserServices : IUser
+    {
+
+        private readonly VideoGameDbContext _context;
+        private readonly IConfiguration _configuration;
+        public UserServices(VideoGameDbContext context, IConfiguration configuration)
+        {
+            _context = context;
+            _configuration = configuration;
+        }
+
+        public async Task<(MdResponse,User)> RegisterUser(MdUser request)
+        {
+            MdResponse response = new MdResponse { ResponseCode = 0};
+            User user = new();
+
+            if(request == null)
+            {
+                response.ResponseMessage = "All fields are required";
+                return (response, user);
+            }
+
+            //Check if there is any user with that user name
+            var check = await _context.Users.AnyAsync(u => u.UserName == request.UserName);
+
+            if(check)
+            {
+                response.ResponseMessage = "User name already exists";
+                return (response, user);
+            }
+
+            var hashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password); 
+
+            user.UserName = request.UserName;
+            user.HashedPassword = hashedPassword;
+
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+            response.ResponseCode = 1;
+            response.ResponseMessage = "User Created Successfully";
+
+            return (response,user);
+        }
+
+        public async Task<(MdResponse, string, User)> LogInUser(MdUser cred)
+        {
+            MdResponse response = new MdResponse { ResponseCode = 0};
+            string Token = string.Empty;
+            User? user = new User();
+
+            if (cred == null)
+            {
+                response.ResponseMessage = "Username or Password is required";
+                return (response, Token, user) ;
+            }
+
+
+            user = await _context.Users.Where(u => u.UserName == cred.UserName).FirstOrDefaultAsync();
+
+            if (user is null)
+            {
+                response.ResponseMessage = "Invalid credentials";
+                user = new();
+                return (response, Token, user!);
+            }
+
+
+            var result = new PasswordHasher<User>().VerifyHashedPassword(user, user.HashedPassword, cred.Password);
+
+            if(result == PasswordVerificationResult.Failed)
+            {
+                response.ResponseMessage =  "Invalid credentials";
+                user = new();
+                return (response, Token, user!);
+            }
+
+            user.HashedPassword = "";
+
+            string token = CreateJwtToken(user);
+
+            response.ResponseCode = 1;
+            response.ResponseMessage = "User Logged in Successfully";
+
+            return (response, token, user);
+        }
+
+
+        //Method to create the JWT Token
+        private string CreateJwtToken(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
+            };
+
+            //Install-Package System.IdentityModel.Tokens.Jwt
+            var key =  new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("JWT:SecretKey")!));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+
+            var tokenDescriptor = new JwtSecurityToken
+            (
+                issuer: _configuration.GetValue<string>("JWT:Issuer"),
+                audience: _configuration.GetValue<string>("JWT:Audience"),
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration.GetValue<double>("JWT:Expiration"))),
+                signingCredentials: creds
+            );
+
+
+            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        }
+    }
+}

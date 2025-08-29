@@ -19,6 +19,7 @@ builder.Services.AddScoped<IVideoGame, VideoGameServices>();
 builder.Services.AddScoped<IDeveloper, DeveloperServices>();
 builder.Services.AddScoped<IPublisher, PublisherServices>();
 builder.Services.AddScoped<IGenre, GenreServices>(); 
+builder.Services.AddScoped<IUser, UserServices>();
 
 var app = builder.Build();
 
