@@ -7,6 +7,6 @@ namespace VideoGameApi.Interfaces
     public interface IUser
     {
         Task<(MdResponse ,User)> RegisterUser(MdUser request);
-        Task<(MdResponse, string, User)> LogInUser(MdUser cred);
+        Task<(MdResponse, string,string, User)> LogInUser(MdUser cred);
     }
 }

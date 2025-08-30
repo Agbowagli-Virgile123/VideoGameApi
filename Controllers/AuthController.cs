@@ -34,11 +34,12 @@ namespace VideoGameApi.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<object>> LogIn([FromBody] MdUser cred)
         {
-            var ( resp, token, user ) = await _user.LogInUser(cred);
+            var ( resp, refreshToken ,token, user ) = await _user.LogInUser(cred);
             return Ok(new
             {
                 Response = resp,
-                Token = token,
+                AccessToken = token,
+                RefreshToken = refreshToken,
                 User = user
             });
         }
@@ -49,6 +50,13 @@ namespace VideoGameApi.Controllers
         public ActionResult<string> AutenticatedOnlyEndpoint()
         {
             return Ok("You are authenticated");
+        }
+
+        [Authorize(Roles = "Admin, Developer")]
+        [HttpGet("AdminOnlyEndpoint")]
+        public ActionResult<string> AdminOnlyEndpoint()
+        {
+            return Ok("You are an admin or a developer");
         }
     }
 }

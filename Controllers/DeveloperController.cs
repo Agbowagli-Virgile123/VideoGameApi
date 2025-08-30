@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VideoGameApi.Interfaces;
 using VideoGameApi.Models.DatabaseModels;
@@ -16,6 +17,7 @@ namespace VideoGameApi.Controllers
             _developer = developer;
         }
 
+        [Authorize]
         [HttpGet("GetAllDevs")]
         public async Task<ActionResult<List<Developer>>> Developers()
         {

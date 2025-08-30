@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using VideoGameApi.Data;
 using VideoGameApi.Interfaces;
@@ -48,6 +49,7 @@ namespace VideoGameApi.Services
 
             user.UserName = request.UserName;
             user.HashedPassword = hashedPassword;
+            user.Role = request.Role;
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -57,16 +59,17 @@ namespace VideoGameApi.Services
             return (response,user);
         }
 
-        public async Task<(MdResponse, string, User)> LogInUser(MdUser cred)
+        public async Task<(MdResponse, string, string, User)> LogInUser(MdUser cred)
         {
             MdResponse response = new MdResponse { ResponseCode = 0};
+            string refreshToken = string.Empty;
             string Token = string.Empty;
             User? user = new User();
 
             if (cred == null)
             {
                 response.ResponseMessage = "Username or Password is required";
-                return (response, Token, null!) ;
+                return (response, refreshToken,Token, null!) ;
             }
 
 
@@ -76,7 +79,7 @@ namespace VideoGameApi.Services
             {
                 response.ResponseMessage = "Invalid credentials";
                 user = new();
-                return (response, Token, null!);
+                return (response, refreshToken, Token, null!);
             }
 
 
@@ -86,19 +89,31 @@ namespace VideoGameApi.Services
             {
                 response.ResponseMessage =  "Invalid credentials";
                 user = new();
-                return (response, Token, null!);
+                return (response, refreshToken, Token, null!);
             }
 
             user.HashedPassword = "";
 
-            string token = CreateJwtToken(user);
+            Token = CreateJwtToken(user);
 
             response.ResponseCode = 1;
             response.ResponseMessage = "User Logged in Successfully";
 
-            return (response, token, user);
+            return (response, refreshToken, Token, user);
         }
 
+        //Method to create the refresh token
+        private string CreateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using(var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
+
+      
 
         //Method to create the JWT Token
         private string CreateJwtToken(User user)
@@ -107,6 +122,7 @@ namespace VideoGameApi.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             //Install-Package System.IdentityModel.Tokens.Jwt
@@ -122,7 +138,6 @@ namespace VideoGameApi.Services
                 expires: DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration.GetValue<double>("JWT:Expiration"))),
                 signingCredentials: creds
             );
-
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
