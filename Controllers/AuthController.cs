@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
@@ -35,13 +36,38 @@ namespace VideoGameApi.Controllers
         public async Task<ActionResult<object>> LogIn([FromBody] MdUser cred)
         {
             var ( resp, refreshToken ,token, user ) = await _user.LogInUser(cred);
+
+            var tokens = new
+            {
+                AccessToken = token,
+                RefeshToken = refreshToken,
+            };
             return Ok(new
             {
                 Response = resp,
-                AccessToken = token,
-                RefreshToken = refreshToken,
+                Tokens = tokens,
                 User = user
             });
+        }
+
+        [HttpPost("RefreshTokensAsync")]
+        public async Task<ActionResult<object>> RefreshTokensAsync([FromBody]MdRefreshTokenRequest request)
+        {
+            var (accsessToken, RefreshToken) = await _user.RefreshTokensAsync(request);
+
+            if(accsessToken == null || RefreshToken == null)
+            {
+               return Unauthorized("Invalid Refresh Token");
+            } 
+
+
+            var resp = new
+            {
+                AccessToken = accsessToken,
+                RefreshToken = RefreshToken,
+            };
+
+            return Ok(resp);
         }
 
 

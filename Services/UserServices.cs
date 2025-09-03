@@ -11,6 +11,7 @@ using VideoGameApi.Interfaces;
 using VideoGameApi.Models;
 using VideoGameApi.Models.DatabaseModels;
 using VideoGameApi.Models.User;
+using YamlDotNet.Core.Tokens;
 
 namespace VideoGameApi.Services
 {
@@ -92,14 +93,48 @@ namespace VideoGameApi.Services
                 return (response, refreshToken, Token, null!);
             }
 
-            user.HashedPassword = "";
 
             Token = CreateJwtToken(user);
+            refreshToken = await GenerateAndSaveRefreshTokenAsync(user);
+
+            user.HashedPassword = "";
 
             response.ResponseCode = 1;
             response.ResponseMessage = "User Logged in Successfully";
 
             return (response, refreshToken, Token, user);
+        }
+        
+        public async Task<(string, string)> RefreshTokensAsync(MdRefreshTokenRequest request)
+        {
+            if(request is null || string.IsNullOrEmpty(request.RefreshToken) || request?.UserId == null)
+            {
+                return (null!, null!);
+            }
+
+            var user = await ValidateRefreshToken(request.UserId, request.RefreshToken!);
+            if(user is null)
+            {
+                return (null!, null!);
+            }
+
+            string Token = CreateJwtToken(user);
+            string refreshToken = await GenerateAndSaveRefreshTokenAsync(user);
+
+            return (Token, refreshToken);
+        }
+
+        //Method the refresh the access token based on the UserId and the refresh 
+        private async Task<User> ValidateRefreshToken(Guid userId,  string refreshToken)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            if(user is null || string.IsNullOrEmpty(user.RefreshToken) || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <  DateTime.UtcNow)
+            {
+                return null!;
+            }
+
+            return user;
         }
 
         //Method to create the refresh token
@@ -113,8 +148,18 @@ namespace VideoGameApi.Services
             }
         }
 
-      
+        //Function to generate and save the refresh token
+        private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
+        {
+            var refreshToken = CreateRefreshToken();
 
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            return user.RefreshToken;
+        }
+      
         //Method to create the JWT Token
         private string CreateJwtToken(User user)
         {
@@ -135,11 +180,12 @@ namespace VideoGameApi.Services
                 issuer: _configuration.GetValue<string>("JWT:Issuer"),
                 audience: _configuration.GetValue<string>("JWT:Audience"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration.GetValue<double>("JWT:Expiration"))),
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration.GetValue<double>("JWT:Expiration"))),
                 signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
+
     }
 }
