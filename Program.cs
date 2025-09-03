@@ -60,15 +60,16 @@ builder.Services.AddScoped<IUser, UserServices>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    //app.MapScalarApiReference();
-    //app.MapOpenApi();
-    //app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "GameApi"));
+//if (app.Environment.IsDevelopment())
+//{
+//    //app.MapScalarApiReference();
+//    //app.MapOpenApi();
+//    //app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "GameApi"));
 
-    app.UseOpenApi();
-    app.UseSwaggerUI();
-}
+//}
+
+app.UseOpenApi();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
