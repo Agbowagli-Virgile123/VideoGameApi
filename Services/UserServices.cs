@@ -180,7 +180,7 @@ namespace VideoGameApi.Services
                 issuer: _configuration.GetValue<string>("JWT:Issuer"),
                 audience: _configuration.GetValue<string>("JWT:Audience"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration.GetValue<double>("JWT:Expiration"))),
+                expires: DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration.GetValue<double>("JWT:Expiration"))),
                 signingCredentials: creds
             );
 
