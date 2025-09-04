@@ -1,14 +1,22 @@
-# Use the official .NET image as a build stage
+# VideoGameApi/Dockerfile
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 5000
+ENV ASPNETCORE_URLS=http://+:5000
+ENV ASPNETCORE_ENVIRONMENT=Production
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["VideoGameApi/VideoGameApi.csproj", "VideoGameApi/"]
-RUN dotnet restore "VideoGameApi/VideoGameApi.csproj"
+
+# Copy only the csproj first (leverages Docker cache)
+COPY ["VideoGameApi.csproj", "./"]
+RUN dotnet restore "VideoGameApi.csproj"
+
+# Copy the rest of the source
 COPY . .
-WORKDIR "/src/VideoGameApi"
+
+# Build and publish
+WORKDIR "/src"
 RUN dotnet build "VideoGameApi.csproj" -c Release -o /app/build
 
 FROM build AS publish
