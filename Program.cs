@@ -32,8 +32,8 @@ builder.Services.AddOpenApiDocument(options =>
     options.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
 
-//Inject the DbContext
-builder.Services.AddDbContext<VideoGameDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//Inject the DbContext //UseSqlServer
+builder.Services.AddDbContext<VideoGameDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //Authentication Scheme
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -58,6 +58,13 @@ builder.Services.AddScoped<IGenre, GenreServices>();
 builder.Services.AddScoped<IUser, UserServices>();
 
 var app = builder.Build();
+
+// ?? Run migrations automatically at startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<VideoGameDbContext>();
+    db.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
